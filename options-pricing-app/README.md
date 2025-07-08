@@ -268,11 +268,8 @@ The neural network implementation includes **SHAP (SHapley Additive exPlanations
 
 ## API Endpoints
 
-### Option Calculation
-- `POST /api/calculate/` - Calculate option price using Black-Scholes
-
-### Option Calculation
-- `POST /api/calculate/` - Calculate option price using Black-Scholes model
+### Option Prediction
+- `POST /api/predict/` - Predict option price using Black-Scholes, ML Regression, and Neural Network models
 
 ### Market Data
 - `GET /api/market-data/` - List all market data
