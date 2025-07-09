@@ -207,7 +207,6 @@ const OptionCalculator: React.FC = () => {
           <div className="predictions-section">
             <h4>Model Predictions</h4>
             <div className="predictions-grid">
-              {/* Black-Scholes */}
               <div className="prediction-card">
                 <h5>{result.predictions.black_scholes.model_type}</h5>
                 <div className="prediction-price">
@@ -222,7 +221,6 @@ const OptionCalculator: React.FC = () => {
                 </div>
               </div>
 
-              {/* ML Regression */}
               <div className="prediction-card">
                 <h5>{result.predictions.ml_regression.model_type}</h5>
                 <div className="prediction-price">
@@ -245,7 +243,6 @@ const OptionCalculator: React.FC = () => {
                 )}
               </div>
 
-              {/* Neural Network */}
               <div className="prediction-card">
                 <h5>{result.predictions.neural_network.model_type}</h5>
                 <div className="prediction-price">

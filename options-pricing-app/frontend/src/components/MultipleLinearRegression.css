@@ -17,7 +17,6 @@
   font-size: 1.1rem;
 }
 
-/* Training Section */
 .training-section {
   background: #f8f9fa;
   border-radius: 10px;
@@ -69,7 +68,6 @@
   font-size: 0.95rem;
 }
 
-/* Error Message */
 .error-message {
   background: #fee;
   border: 1px solid #fcc;
@@ -79,14 +77,12 @@
   color: #c33;
 }
 
-/* Results Section */
 .results-section {
   display: flex;
   flex-direction: column;
   gap: 30px;
 }
 
-/* Performance Metrics */
 .performance-metrics {
   background: white;
   border-radius: 10px;
@@ -127,7 +123,6 @@
   font-weight: bold;
 }
 
-/* Coefficients Section */
 .coefficients-section {
   background: white;
   border-radius: 10px;
@@ -175,7 +170,6 @@
   font-weight: 500;
 }
 
-/* Summary Statistics */
 .summary-stats {
   background: white;
   border-radius: 10px;
@@ -223,7 +217,6 @@
   color: #e74c3c;
 }
 
-/* Predictions Section */
 .predictions-section {
   background: white;
   border-radius: 10px;
@@ -299,7 +292,6 @@
   font-weight: 500;
 }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .mlr-container {
     padding: 15px;

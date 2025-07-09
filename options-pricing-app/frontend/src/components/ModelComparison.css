@@ -219,7 +219,7 @@
   margin-bottom: 20px;
 }
 
-/* Responsive design */
+
 @media (max-width: 768px) {
   .model-comparison {
     padding: 15px;

@@ -31,7 +31,6 @@ class MarketDataSerializer(serializers.ModelSerializer):
 
 
 class OptionCalculationSerializer(serializers.Serializer):
-    """Serializer for option pricing calculations"""
     symbol = serializers.CharField(max_length=20)
     option_type = serializers.ChoiceField(choices=[('call', 'Call'), ('put', 'Put')])
     strike_price = serializers.DecimalField(max_digits=10, decimal_places=2)
@@ -63,7 +62,6 @@ class OptionCalculationSerializer(serializers.Serializer):
 
 
 class TestingOptionDataSerializer(serializers.ModelSerializer):
-    """Serializer for TestingOptionData model"""
     option_type = serializers.ChoiceField(choices=OPTION_TYPE_CHOICES)
     days_to_expiry = serializers.SerializerMethodField()
     class Meta:
@@ -77,37 +75,30 @@ class TestingOptionDataSerializer(serializers.ModelSerializer):
         return None
 
     def validate_quantity(self, value):
-        """Validate that quantity is not zero"""
         if value == 0:
             raise serializers.ValidationError("Quantity cannot be zero")
         return value
 
     def validate_trade_price(self, value):
-        """Validate that trade price is positive"""
         if value < 0:
             raise serializers.ValidationError("Trade price must be positive")
         return value
 
     def validate_strike_price(self, value):
-        """Validate that strike price is positive"""
         if value <= 0:
             raise serializers.ValidationError("Strike price must be positive")
         return value
 
     def to_representation(self, instance):
-        """Custom representation to include computed moneyness"""
         data = super().to_representation(instance)
-        # Add moneyness calculation if underlying price is available
         if hasattr(instance, 'close_price') and instance.close_price:
             data['moneyness'] = instance.compute_moneyness(instance.close_price)
-        # Also include the stored moneyness value if it exists
         if instance.moneyness is not None:
             data['moneyness'] = instance.moneyness
         return data
 
 
 class TestingOptionDataCreateSerializer(serializers.ModelSerializer):
-    """Serializer for creating TestingOptionData with validation"""
     class Meta:
         model = TestingOptionData
         fields = [
@@ -118,14 +109,11 @@ class TestingOptionDataCreateSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        """Custom validation for the entire data set"""
-        # Validate that expiration date is not in the past
         if data.get('expiration_date'):
             from django.utils import timezone
             if data['expiration_date'] < timezone.now().date():
                 raise serializers.ValidationError("Expiration date cannot be in the past")
         
-        # Validate that trade datetime is not in the future
         if data.get('trade_datetime'):
             from django.utils import timezone
             if data['trade_datetime'] > timezone.now():
@@ -135,7 +123,6 @@ class TestingOptionDataCreateSerializer(serializers.ModelSerializer):
 
 
 class ModelTrainingResultSerializer(serializers.ModelSerializer):
-    """Serializer for ModelTrainingResult model"""
     model_type_display = serializers.CharField(source='get_model_type_display', read_only=True)
     
     class Meta:

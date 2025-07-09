@@ -80,7 +80,6 @@ const MultipleLinearRegression: React.FC = () => {
       <h2>Multiple Linear Regression Model</h2>
       <p>Train and evaluate a multiple linear regression model for options pricing</p>
 
-      {/* Training Section */}
       <div className="training-section">
         <h3>Model Training</h3>
         <div className="training-controls">
@@ -99,17 +98,14 @@ const MultipleLinearRegression: React.FC = () => {
         </div>
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="error-message">
           <p>{error}</p>
         </div>
       )}
 
-      {/* Results Display */}
       {results && (
         <div className="results-section">
-          {/* Model Performance */}
           <div className="performance-metrics">
             <h3>Model Performance</h3>
             <div className="metrics-grid">
@@ -124,7 +120,6 @@ const MultipleLinearRegression: React.FC = () => {
             </div>
           </div>
 
-          {/* Feature Coefficients */}
           <div className="coefficients-section">
             <h3>Feature Coefficients</h3>
             <div className="coefficients-table">
@@ -149,7 +144,6 @@ const MultipleLinearRegression: React.FC = () => {
             </div>
           </div>
 
-          {/* Summary Statistics */}
           <div className="summary-stats">
             <h3>Prediction Summary</h3>
             <div className="stats-grid">
@@ -176,7 +170,6 @@ const MultipleLinearRegression: React.FC = () => {
             </div>
           </div>
 
-          {/* Predictions Table */}
           <div className="predictions-section">
             <h3>Sample Predictions</h3>
             <div className="predictions-table">

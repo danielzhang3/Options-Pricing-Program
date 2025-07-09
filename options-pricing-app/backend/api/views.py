@@ -29,31 +29,25 @@ from .neural_network import train_neural_network
 import numpy as np
 import pandas as pd
 
-# Set up logging
 logger = logging.getLogger(__name__)
 
 
 class BlackScholesCalculator:
-    """Black-Scholes option pricing calculator"""
     
     @staticmethod
     def normal_cdf(x):
-        """Calculate cumulative distribution function of standard normal distribution"""
         return 0.5 * (1 + math.erf(x / math.sqrt(2)))
     
     @staticmethod
     def calculate_d1(S, K, T, r, sigma):
-        """Calculate d1 parameter for Black-Scholes formula"""
         return (math.log(S / K) + (r + 0.5 * sigma**2) * T) / (sigma * math.sqrt(T))
     
     @staticmethod
     def calculate_d2(d1, sigma, T):
-        """Calculate d2 parameter for Black-Scholes formula"""
         return d1 - sigma * math.sqrt(T)
     
     @staticmethod
     def call_price(S, K, T, r, sigma):
-        """Calculate call option price using Black-Scholes formula"""
         d1 = BlackScholesCalculator.calculate_d1(S, K, T, r, sigma)
         d2 = BlackScholesCalculator.calculate_d2(d1, sigma, T)
         
@@ -62,7 +56,6 @@ class BlackScholesCalculator:
     
     @staticmethod
     def put_price(S, K, T, r, sigma):
-        """Calculate put option price using Black-Scholes formula"""
         d1 = BlackScholesCalculator.calculate_d1(S, K, T, r, sigma)
         d2 = BlackScholesCalculator.calculate_d2(d1, sigma, T)
         
@@ -71,33 +64,27 @@ class BlackScholesCalculator:
     
     @staticmethod
     def calculate_greeks(S, K, T, r, sigma, option_type):
-        """Calculate option Greeks"""
         d1 = BlackScholesCalculator.calculate_d1(S, K, T, r, sigma)
         d2 = BlackScholesCalculator.calculate_d2(d1, sigma, T)
         
-        # Delta
         if option_type == 'call':
             delta = BlackScholesCalculator.normal_cdf(d1)
-        else:  # put
+        else:  
             delta = BlackScholesCalculator.normal_cdf(d1) - 1
         
-        # Gamma (same for both call and put)
         gamma = math.exp(-0.5 * d1**2) / (S * sigma * math.sqrt(T) * math.sqrt(2 * math.pi))
         
-        # Theta
         theta_term = -(S * sigma * math.exp(-0.5 * d1**2)) / (2 * math.sqrt(T) * math.sqrt(2 * math.pi))
         if option_type == 'call':
             theta = theta_term - r * K * math.exp(-r * T) * BlackScholesCalculator.normal_cdf(d2)
-        else:  # put
+        else:  
             theta = theta_term + r * K * math.exp(-r * T) * BlackScholesCalculator.normal_cdf(-d2)
         
-        # Vega (same for both call and put)
         vega = S * math.sqrt(T) * math.exp(-0.5 * d1**2) / math.sqrt(2 * math.pi)
         
-        # Rho
         if option_type == 'call':
             rho = K * T * math.exp(-r * T) * BlackScholesCalculator.normal_cdf(d2)
-        else:  # put
+        else:  
             rho = -K * T * math.exp(-r * T) * BlackScholesCalculator.normal_cdf(-d2)
         
         return {
@@ -110,30 +97,25 @@ class BlackScholesCalculator:
 
 
 class OptionViewSet(ModelViewSet):
-    """ViewSet for Option model"""
     queryset = Option.objects.all()
     serializer_class = OptionSerializer
 
 
 class OptionPriceViewSet(ModelViewSet):
-    """ViewSet for OptionPrice model"""
     queryset = OptionPrice.objects.all()
     serializer_class = OptionPriceSerializer
 
 
 class MarketDataViewSet(ModelViewSet):
-    """ViewSet for MarketData model"""
     queryset = MarketData.objects.all()
     serializer_class = MarketDataSerializer
 
 
 class TestingOptionDataViewSet(ModelViewSet):
-    """ViewSet for TestingOptionData model"""
     queryset = TestingOptionData.objects.all()
     serializer_class = TestingOptionDataSerializer
     
     def get_queryset(self):
-        """Allow filtering by underlying symbol"""
         queryset = TestingOptionData.objects.all()
         underlying = self.request.query_params.get('underlying', None)
         if underlying:
@@ -142,12 +124,10 @@ class TestingOptionDataViewSet(ModelViewSet):
 
 
 class ModelTrainingResultViewSet(ModelViewSet):
-    """ViewSet for ModelTrainingResult model"""
     queryset = ModelTrainingResult.objects.all()
     serializer_class = ModelTrainingResultSerializer
     
     def get_queryset(self):
-        """Allow filtering by model type"""
         queryset = ModelTrainingResult.objects.all()
         model_type = self.request.query_params.get('model_type', None)
         if model_type:
@@ -160,7 +140,6 @@ class ModelTrainingResultViewSet(ModelViewSet):
 
 @api_view(['GET'])
 def option_price_history(request, option_id):
-    """Get price history for a specific option"""
     try:
         option = Option.objects.get(id=option_id)
         prices = OptionPrice.objects.filter(option=option).order_by('-calculated_at')
@@ -175,7 +154,6 @@ def option_price_history(request, option_id):
 
 @api_view(['GET'])
 def market_data_latest(request, symbol):
-    """Get latest market data for a symbol"""
     try:
         latest_data = MarketData.objects.filter(symbol=symbol).latest('timestamp')
         serializer = MarketDataSerializer(latest_data)
@@ -291,14 +269,11 @@ class CSVUploadView(APIView):
 
 @api_view(['POST'])
 def train_regression_model(request):
-    """Train multiple linear regression model for options pricing"""
     try:
-        # Get training parameters from request
         alpha = request.data.get('alpha', 0.01)
         lambda_ = request.data.get('lambda_', 0.1)
         num_iters = request.data.get('num_iters', 1000)
         
-        # Train the model
         from .multiple_linear_regression import load_option_data, preprocess, run_gradient_descent_regression
         from .model_manager import save_ml_regression_model
         
@@ -312,30 +287,26 @@ def train_regression_model(request):
         X = df[feature_names]
         y = df['trade_price']
         
-        # Train model and get parameters for saving
         theta, scaling_params, prediction_df = run_gradient_descent_regression(
             df, alpha=alpha, lambda_=lambda_, num_iters=num_iters
         )
         
-        # Save the trained model
         model_info = {
             'alpha': alpha,
             'lambda': lambda_,
             'num_iters': num_iters,
-            'n_features': len(theta) - 1,  # -1 for intercept
+            'n_features': len(theta) - 1,  
             'training_date': timezone.now().isoformat(),
             'feature_names': feature_names
         }
         save_ml_regression_model(theta, scaling_params, model_info)
         
-        # Get results for response
         results = train_multiple_linear_regression(
             alpha=alpha,
             lambda_=lambda_,
             num_iters=num_iters
         )
         
-        # Save training results to database
         training_inputs = {
             'features': X.to_dict(orient='list'),
             'targets': y.tolist(),
@@ -344,7 +315,6 @@ def train_regression_model(request):
             'option_types': df['option_type'].tolist(),
         }
         
-        # Extract metrics from the correct structure
         summary_stats = results.get('summary_stats', {})
         training_result = ModelTrainingResult.objects.create(
             model_type='linear_regression',
@@ -360,13 +330,12 @@ def train_regression_model(request):
             max_overprediction=summary_stats.get('max_overprediction', 0),
             max_underprediction=summary_stats.get('max_underprediction', 0),
             n_training_samples=len(X),
-            n_test_samples=len(X) * 0.2,  # Assuming 20% test split
+            n_test_samples=len(X) * 0.2,  
             coefficients=results.get('coefficients'),
             feature_names=feature_names,
             training_inputs=training_inputs
         )
         
-        # Add the training result ID to the response
         results['training_result_id'] = training_result.id
         
         return Response(results, status=status.HTTP_200_OK)
@@ -382,14 +351,11 @@ def train_regression_model(request):
 
 @api_view(['POST'])
 def train_neural_network_model(request):
-    """Train neural network model for options pricing"""
     try:
-        # Get training parameters from request
         epochs = request.data.get('epochs', 100)
         batch_size = request.data.get('batch_size', 32)
         validation_split = request.data.get('validation_split', 0.2)
-        
-        # Train the model
+
         from .neural_network import load_and_preprocess_data
         from .model_manager import save_neural_network_model
         
@@ -400,7 +366,6 @@ def train_neural_network_model(request):
             validation_split=validation_split
         )
         
-        # Save the trained model
         model_info = {
             'epochs': epochs,
             'batch_size': batch_size,
@@ -411,7 +376,6 @@ def train_neural_network_model(request):
         }
         save_neural_network_model(model, scaler, model_info)
         
-        # Save training results to database
         training_inputs = {
             'features': X.to_dict(orient='list'),
             'targets': y.tolist(),
@@ -437,7 +401,6 @@ def train_neural_network_model(request):
             training_inputs=training_inputs
         )
         
-        # Add the training result ID to the response
         summary['training_result_id'] = training_result.id
         
         return Response(summary, status=status.HTTP_200_OK)
@@ -453,17 +416,11 @@ def train_neural_network_model(request):
 
 @api_view(['GET'])
 def black_scholes_batch(request):
-    """
-    Compute Black-Scholes prices for all TestingOptionData rows and return results like regression output.
-    Also saves the run (inputs and summary stats) to ModelTrainingResult for comparison.
-    """
-    # Load data
     queryset = TestingOptionData.objects.all().values()
     df = pd.DataFrame(list(queryset))
     if df.empty:
         return Response({"error": "No data available."}, status=400)
 
-    # Feature engineering (similar to preprocess)
     df = df.dropna(subset=['trade_price', 'strike_price', 'trade_datetime', 'expiration_date', 'underlying'])
     df = df[df['trade_price'] > 0]
     df['trade_datetime'] = pd.to_datetime(df['trade_datetime']).dt.tz_localize(None)
@@ -471,7 +428,6 @@ def black_scholes_batch(request):
     df['days_to_expiry'] = (df['expiration_date'] - df['trade_datetime']).dt.days
     df['option_type_encoded'] = df['option_type'].map({'C': 1, 'P': 0, 'call': 1, 'put': 0})
 
-    # Bulk fetch price history for all underlyings
     unique_underlyings = set(df['underlying'].unique())
     all_tickers = set()
     for underlying in unique_underlyings:
@@ -511,11 +467,9 @@ def black_scholes_batch(request):
     df['risk_free_rate'] = df.apply(lambda row: get_risk_free_rate(row['trade_datetime']), axis=1)
     df = df.dropna(subset=['underlying_price', 'volatility', 'risk_free_rate'])
 
-    # Calculate T in years
     df['T'] = df['days_to_expiry'] / 365.0
     df = df[df['T'] > 0]
 
-    # Compute Black-Scholes price
     def compute_bs_price(row):
         S = float(row['underlying_price'])
         K = float(row['strike_price'])
@@ -533,7 +487,6 @@ def black_scholes_batch(request):
     df.replace([np.inf, -np.inf], np.nan, inplace=True)
     df.fillna(0, inplace=True)
 
-    # Summary statistics
     summary_stats = {
         "mean_absolute_error": float(np.abs(df['residual']).mean()),
         "mean_absolute_percentage_error": float(np.abs(df['residual_pct']).mean()),
@@ -542,11 +495,8 @@ def black_scholes_batch(request):
         "max_underprediction": float(df['residual'].max()),
     }
 
-    # Sample predictions (limit to 100 for frontend)
     results = df[['trade_datetime', 'underlying', 'option_type', 'strike_price', 'days_to_expiry', 'trade_price', 'bs_price', 'residual', 'residual_pct']].head(100).to_dict(orient="records")
 
-    # Save run to ModelTrainingResult for comparison
-    # Store the features and targets used for this run
     features = [
         'strike_price', 'underlying_price', 'option_type_encoded',
         'days_to_expiry', 'volatility', 'risk_free_rate', 'T'
@@ -584,9 +534,7 @@ def black_scholes_batch(request):
 
 @api_view(['POST'])
 def predict_option_price(request):
-    """Predict option price using all three models (Black-Scholes, ML Regression, Neural Network)"""
     try:
-        # Validate input data
         required_fields = ['symbol', 'option_type', 'strike_price', 'expiration_date', 
                           'underlying_price', 'risk_free_rate', 'volatility']
         
@@ -597,7 +545,6 @@ def predict_option_price(request):
                     status=status.HTTP_400_BAD_REQUEST
                 )
         
-        # Parse input data
         data = request.data
         symbol = data['symbol']
         option_type = data['option_type']
@@ -607,7 +554,6 @@ def predict_option_price(request):
         risk_free_rate = float(data['risk_free_rate'])
         volatility = float(data['volatility'])
         
-        # Calculate time to expiration
         today = date.today()
         T = (expiration_date - today).days / 365.0
         
@@ -619,10 +565,9 @@ def predict_option_price(request):
         
         results = {}
         
-        # 1. Black-Scholes prediction
         if option_type == 'call':
             bs_price = BlackScholesCalculator.call_price(underlying_price, strike_price, T, risk_free_rate, volatility)
-        else:  # put
+        else:  
             bs_price = BlackScholesCalculator.put_price(underlying_price, strike_price, T, risk_free_rate, volatility)
         
         results['black_scholes'] = {
@@ -631,11 +576,9 @@ def predict_option_price(request):
             'confidence': 'High (theoretical model)'
         }
         
-        # 2. ML Regression prediction (if model exists)
         try:
             from .model_manager import predict_ml_regression, get_model_status
             
-            # Prepare option data for prediction
             option_data = {
                 'strike_price': strike_price,
                 'underlying_price': underlying_price,
@@ -648,11 +591,9 @@ def predict_option_price(request):
                 'days_to_expiry_sq': (T * 365) ** 2
             }
             
-            # Make prediction using saved model
             ml_price = predict_ml_regression(option_data)
             
             if ml_price is not None:
-                # Get model performance from database
                 regression_results = ModelTrainingResult.objects.filter(
                     model_type='linear_regression'
                 ).order_by('-r2_score', '-training_date').first()
@@ -681,11 +622,9 @@ def predict_option_price(request):
                 'error': str(e)
             }
         
-        # 3. Neural Network prediction (if model exists)
         try:
             from .model_manager import predict_neural_network
             
-            # Prepare option data for prediction
             option_data = {
                 'strike_price': strike_price,
                 'underlying_price': underlying_price,
@@ -701,11 +640,9 @@ def predict_option_price(request):
                 'volatility_time': volatility * np.sqrt(T)
             }
             
-            # Make prediction using saved model
             nn_price = predict_neural_network(option_data)
             
             if nn_price is not None:
-                # Get model performance from database
                 nn_results = ModelTrainingResult.objects.filter(
                     model_type='neural_network'
                 ).order_by('-r2_score', '-training_date').first()

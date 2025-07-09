@@ -40,7 +40,6 @@ const CSVUpload: React.FC<CSVUploadProps> = ({ onUploadSuccess, onUploadError })
         const lines = text.split('\n');
         const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
         
-        // Parse first 5 rows for preview
         const previewRows = lines.slice(1, 6).map(line => {
           const values = line.split(',').map(v => v.trim().replace(/"/g, ''));
           const row: any = {};
@@ -105,7 +104,6 @@ const CSVUpload: React.FC<CSVUploadProps> = ({ onUploadSuccess, onUploadError })
       <h2>Upload IBKR Options Data</h2>
       <p>Upload your IBKR CSV file to import options trading data for analysis</p>
 
-      {/* File Upload Area */}
       <div 
         {...getRootProps()} 
         className={`upload-area ${isDragActive ? 'drag-active' : ''} ${uploadedFile ? 'has-file' : ''}`}
@@ -128,14 +126,12 @@ const CSVUpload: React.FC<CSVUploadProps> = ({ onUploadSuccess, onUploadError })
         )}
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="error-message">
           <p>{error}</p>
         </div>
       )}
 
-      {/* Preview Section */}
       {previewData.length > 0 && (
         <div className="preview-section">
           <h3>File Preview (First 5 rows)</h3>
@@ -162,7 +158,6 @@ const CSVUpload: React.FC<CSVUploadProps> = ({ onUploadSuccess, onUploadError })
         </div>
       )}
 
-      {/* Action Buttons */}
       {uploadedFile && (
         <div className="upload-actions">
           <button 
@@ -182,7 +177,6 @@ const CSVUpload: React.FC<CSVUploadProps> = ({ onUploadSuccess, onUploadError })
         </div>
       )}
 
-      {/* Progress Bar */}
       {isUploading && (
         <div className="progress-container">
           <div className="progress-bar">
@@ -195,7 +189,6 @@ const CSVUpload: React.FC<CSVUploadProps> = ({ onUploadSuccess, onUploadError })
         </div>
       )}
 
-      {/* Instructions */}
       <div className="instructions">
         <h3>Instructions</h3>
         <ul>

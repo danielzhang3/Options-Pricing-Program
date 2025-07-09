@@ -42,7 +42,6 @@ const TestingDataList: React.FC = () => {
       if (response.ok) {
         const result = await response.json();
         setData(result.results || result);
-        // Calculate total pages if pagination info is available
         if (result.count) {
           setTotalPages(Math.ceil(result.count / itemsPerPage));
         }
@@ -78,7 +77,7 @@ const TestingDataList: React.FC = () => {
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFilter(e.target.value);
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(1);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -109,7 +108,6 @@ const TestingDataList: React.FC = () => {
       <h2>Testing Options Data</h2>
       <p>View and analyze uploaded IBKR options trading data</p>
 
-      {/* Filter Section */}
       <div className="filter-section">
         <input
           type="text"
@@ -123,7 +121,6 @@ const TestingDataList: React.FC = () => {
         </button>
       </div>
 
-      {/* Data Table */}
       {data.length === 0 ? (
         <div className="empty-state">
           <p>No testing data found. Upload a CSV file to see data here.</p>
@@ -189,7 +186,6 @@ const TestingDataList: React.FC = () => {
             </table>
           </div>
 
-          {/* Pagination */}
           {totalPages > 1 && (
             <div className="pagination">
               <button
@@ -214,7 +210,6 @@ const TestingDataList: React.FC = () => {
             </div>
           )}
 
-          {/* Summary Stats */}
           <div className="summary-stats">
             <div className="stat-card">
               <h4>Total Records</h4>

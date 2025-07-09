@@ -2,11 +2,9 @@ import yfinance as yf
 from datetime import datetime, timedelta
 import numpy as np
 
-# In-memory caches
 _price_cache = {}
 _vol_cache = {}
 
-# Primary ticker mappings
 ticker_symbols = {
     "SPX": "^SPX",
     "ES": "ES=F",
@@ -22,7 +20,6 @@ ticker_symbols = {
     "DJX": "^DJX",
 }
 
-# Fallback mappings to ETF or index proxies
 fallback_map = {
     "ES=F": "SPY",
     "MES=F": "SPY",
@@ -44,7 +41,7 @@ def fetch_historical_price(symbol: str, date: datetime) -> float:
     for symbol_try in [primary, fallback]:
         if not symbol_try:
             continue
-        for delta in range(0, 7):  # Retry for the last 7 days
+        for delta in range(0, 7):
             target_date = date - timedelta(days=delta)
             cache_key = (symbol_try, target_date.date())
             if cache_key in _price_cache:

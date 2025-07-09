@@ -11,7 +11,6 @@ router.register(r'training-results', views.ModelTrainingResultViewSet)
 
 urlpatterns = [
     path('', include(router.urls)),
-
     path('predict/', views.predict_option_price, name='predict-option-price'),
     path('options/<int:option_id>/history/', views.option_price_history, name='option-price-history'),
     path('market-data/<str:symbol>/latest/', views.market_data_latest, name='market-data-latest'),

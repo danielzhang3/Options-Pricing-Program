@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 import shap
 import matplotlib
-matplotlib.use('Agg')  # Use non-interactive backend to avoid GUI issues
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import tensorflow as tf
@@ -20,11 +20,6 @@ from api.multiple_linear_regression import bulk_fetch_price_history, get_price_f
 
 
 def load_and_preprocess_data():
-    """
-    Load and preprocess option data for neural network training.
-    Returns:
-        tuple: (X, y) where X is feature matrix and y is target prices
-    """
     print("Loading option data from database...")
     df = pd.DataFrame(list(TestingOptionData.objects.all().values()))
     
@@ -33,38 +28,30 @@ def load_and_preprocess_data():
     
     print(f"Initial data shape: {df.shape}")
     
-    # Filter out invalid trade prices
     df = df[df['trade_price'] > 0]
     print(f"After filtering trade_price > 0: {df.shape}")
 
-    # Parse dates
     df['trade_datetime'] = pd.to_datetime(df['trade_datetime']).dt.tz_localize(None)
     df['expiration_date'] = pd.to_datetime(df['expiration_date']).dt.tz_localize(None)
     df['days_to_expiry'] = (df['expiration_date'] - df['trade_datetime']).dt.days
     
-    # Filter out expired options
     df = df[df['days_to_expiry'] >= 0]
     print(f"After filtering days_to_expiry > 0: {df.shape}")
 
-    # Feature engineering
     df['option_type_encoded'] = df['option_type'].map({'C': 1, 'P': 0, 'call': 1, 'put': 0})
     
-    # Fetch market data for missing underlying prices and volatility
     print("Fetching market data for missing prices and volatility...")
     df = fetch_market_data(df)
     
-    # Additional feature engineering
     df['risk_free_rate'] = df.apply(lambda row: get_risk_free_rate(row['trade_datetime']), axis=1)
     df['moneyness'] = df['underlying_price'] / df['strike_price']
     df['volatility_sq'] = df['volatility'] ** 2
     df['days_to_expiry_sq'] = df['days_to_expiry'] ** 2
     
-    # Add more sophisticated features
     df['time_to_expiry_years'] = df['days_to_expiry'] / 365.0
     df['log_moneyness'] = np.log(df['moneyness'])
     df['volatility_time'] = df['volatility'] * np.sqrt(df['time_to_expiry_years'])
     
-    # Define features for the model
     features = [
         'strike_price', 'underlying_price', 'option_type_encoded',
         'days_to_expiry', 'volatility', 'moneyness', 'risk_free_rate',
@@ -72,11 +59,9 @@ def load_and_preprocess_data():
         'log_moneyness', 'volatility_time'
     ]
     
-    # Remove rows with missing data
     df = df.dropna(subset=features + ['trade_price'])
     print(f"After removing missing data: {df.shape}")
     
-    # Remove outliers (optional - can be commented out)
     df = remove_outliers(df, 'trade_price', threshold=3)
     
     X = df[features]
@@ -90,10 +75,6 @@ def load_and_preprocess_data():
 
 
 def fetch_market_data(df):
-    """
-    Fetch underlying prices and volatility for options data.
-    """
-    # Get unique underlyings
     unique_underlyings = set(df['underlying'].unique())
     all_tickers = set()
     
@@ -130,7 +111,6 @@ def fetch_market_data(df):
                     return vol
         return None
     
-    # Fill missing underlying prices and volatility
     df['underlying_price'] = df.apply(lookup_price, axis=1)
     df['volatility'] = df.apply(lookup_vol, axis=1)
     
@@ -138,31 +118,16 @@ def fetch_market_data(df):
 
 
 def remove_outliers(df, column, threshold=3):
-    """
-    Remove outliers using z-score method.
-    """
     z_scores = np.abs((df[column] - df[column].mean()) / df[column].std())
     return df[z_scores < threshold]
 
 
 def build_model(input_dim, learning_rate=0.001):
-    """
-    Build a neural network model for options pricing.
-    
-    Args:
-        input_dim (int): Number of input features
-        learning_rate (float): Learning rate for optimizer
-    
-    Returns:
-        tf.keras.Model: Compiled neural network model
-    """
     model = Sequential([
-        # Input layer
         Dense(128, activation='relu', input_shape=(input_dim,)),
         BatchNormalization(),
         Dropout(0.3),
         
-        # Hidden layers
         Dense(64, activation='relu'),
         BatchNormalization(),
         Dropout(0.2),
@@ -171,11 +136,9 @@ def build_model(input_dim, learning_rate=0.001):
         BatchNormalization(),
         Dropout(0.1),
         
-        # Output layer
-        Dense(1, activation='linear')  # Linear activation for regression
+        Dense(1, activation='linear')
     ])
     
-    # Compile model
     model.compile(
         optimizer=Adam(learning_rate=learning_rate),
         loss='mse',
@@ -186,23 +149,10 @@ def build_model(input_dim, learning_rate=0.001):
 
 
 def train_neural_network(epochs=100, batch_size=32, validation_split=0.2):
-    """
-    Train a neural network model for options pricing.
-    
-    Args:
-        epochs (int): Maximum number of training epochs
-        batch_size (int): Batch size for training
-        validation_split (float): Fraction of data to use for validation
-    
-    Returns:
-        tuple: (summary, model, scaler) containing evaluation metrics, trained model, and feature scaler
-    """
     print("Starting neural network training...")
     
-    # Load and preprocess data
     X, y = load_and_preprocess_data()
     
-    # Split data
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, shuffle=True
     )
@@ -210,17 +160,14 @@ def train_neural_network(epochs=100, batch_size=32, validation_split=0.2):
     print(f"Training set size: {X_train.shape[0]}")
     print(f"Test set size: {X_test.shape[0]}")
     
-    # Scale features
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
     
-    # Build model
     model = build_model(X_train_scaled.shape[1])
     print(f"Model architecture:")
     model.summary()
     
-    # Callbacks
     early_stop = EarlyStopping(
         monitor='val_loss', 
         patience=15, 
@@ -236,7 +183,6 @@ def train_neural_network(epochs=100, batch_size=32, validation_split=0.2):
         verbose=1
     )
     
-    # Train model
     print("Training model...")
     history = model.fit(
         X_train_scaled, y_train,
@@ -247,23 +193,19 @@ def train_neural_network(epochs=100, batch_size=32, validation_split=0.2):
         verbose=1
     )
     
-    # Make predictions
     print("Making predictions...")
     y_pred = model.predict(X_test_scaled, verbose=0).flatten()
     
-    # Calculate metrics
     mae = mean_absolute_error(y_test, y_pred)
     mse = mean_squared_error(y_test, y_pred)
     rmse = np.sqrt(mse)
     r2 = r2_score(y_test, y_pred)
     residuals = y_test - y_pred
     
-    # Calculate percentage errors with safe MAPE to prevent distortion from small values
     safe_y_test = y_test.copy()
-    safe_y_test[safe_y_test < 1] = 1  # prevent exploding percentage errors
+    safe_y_test[safe_y_test < 1] = 1
     mape = np.mean(np.abs((y_test - y_pred) / safe_y_test)) * 100
     
-    # Summary statistics
     summary = {
         'mae': float(mae),
         'mse': float(mse),
@@ -291,13 +233,11 @@ def train_neural_network(epochs=100, batch_size=32, validation_split=0.2):
     print(f"Training Epochs: {summary['training_epochs']}")
     print("="*50)
     
-    # Add SHAP analysis for sample predictions
     print("\n" + "="*50)
     print("SHAP FEATURE IMPORTANCE ANALYSIS")
     print("="*50)
     
-    # Analyze a few sample predictions
-    sample_indices = [0, 1, 2]  # Analyze first 3 samples
+    sample_indices = [0, 1, 2]
     for i, sample_idx in enumerate(sample_indices):
         if sample_idx < len(X_test):
             print(f"\nSample {i+1} Analysis:")
@@ -311,7 +251,6 @@ def train_neural_network(epochs=100, batch_size=32, validation_split=0.2):
             print(f"  Error: ${abs(sample_true - sample_pred):.2f}")
             print(f"  Percentage Error: {abs(sample_true - sample_pred) / sample_true * 100:.2f}%")
             
-            # Generate SHAP explanation for this sample
             try:
                 explain_prediction_with_shap_kernel(model, scaler, X_test, sample_idx)
                 print(f"  SHAP explanation generated for sample {sample_idx}")
@@ -326,18 +265,6 @@ def train_neural_network(epochs=100, batch_size=32, validation_split=0.2):
 
 
 def predict_option_price(model, scaler, option_data):
-    """
-    Predict option price using trained neural network.
-    
-    Args:
-        model: Trained neural network model
-        scaler: Fitted StandardScaler
-        option_data (dict): Dictionary containing option features
-    
-    Returns:
-        float: Predicted option price
-    """
-    # Prepare features in the same order as training
     features = [
         'strike_price', 'underlying_price', 'option_type_encoded',
         'days_to_expiry', 'volatility', 'moneyness', 'risk_free_rate',
@@ -345,47 +272,29 @@ def predict_option_price(model, scaler, option_data):
         'log_moneyness', 'volatility_time'
     ]
     
-    # Create feature vector
     X = np.array([[option_data[feature] for feature in features]])
     
-    # Scale features
     X_scaled = scaler.transform(X)
     
-    # Make prediction
     prediction = model.predict(X_scaled, verbose=0)[0][0]
     
     return float(prediction)
 
 
 def explain_prediction_with_shap_kernel(model, scaler, X_test_df, sample_idx=0):
-    """
-    Explain a prediction using SHAP KernelExplainer (more stable for TF 2.4+)
-    
-    Args:
-        model: Trained Keras Sequential model
-        scaler: Fitted StandardScaler
-        X_test_df (pd.DataFrame): Test features (unscaled)
-        sample_idx (int): Index of the test sample to explain
-    """
-    # Select background and sample
     X_background = X_test_df.sample(100, random_state=42)
     X_explain = X_test_df.iloc[[sample_idx]]
 
-    # Scale inputs
     X_background_scaled = scaler.transform(X_background)
     X_explain_scaled = scaler.transform(X_explain)
 
-    # Define prediction function (wrapper around model)
     def model_predict(X):
         return model.predict(X).flatten()
 
-    # KernelExplainer works with any black-box model
     explainer = shap.KernelExplainer(model_predict, X_background_scaled)
 
-    # Compute SHAP values
     shap_values = explainer.shap_values(X_explain_scaled, nsamples=100)
 
-    # Create and save waterfall plot
     fig = shap.plots.waterfall(shap.Explanation(
         values=shap_values[0],
         base_values=explainer.expected_value,
@@ -393,31 +302,17 @@ def explain_prediction_with_shap_kernel(model, scaler, X_test_df, sample_idx=0):
         feature_names=X_test_df.columns.tolist()
     ))
     
-    # Save the plot to a file
     plt.savefig(f'shap_explanation_sample_{sample_idx}.png', bbox_inches='tight', dpi=300)
-    plt.close()  # Close the figure to free memory
+    plt.close()
     print(f"  SHAP plot saved as 'shap_explanation_sample_{sample_idx}.png'")
 
 
 def analyze_sample_prediction(model, scaler, X_test, y_test, sample_idx=0):
-    """
-    Analyze a specific sample prediction with SHAP explanation.
-    
-    Args:
-        model: Trained Keras Sequential model
-        scaler: Fitted StandardScaler
-        X_test (pd.DataFrame): Test features
-        y_test (pd.Series): Test targets
-        sample_idx (int): Index of the test sample to analyze
-    """
-    # Get sample data
     sample_input = X_test.iloc[sample_idx]
     sample_true = y_test.iloc[sample_idx]
     
-    # Convert sample_input to dictionary format expected by predict_option_price
     sample_dict = sample_input.to_dict()
     
-    # Make prediction
     sample_pred = predict_option_price(model, scaler, sample_dict)
 
     print(f"Sample {sample_idx} Analysis:")
@@ -427,6 +322,5 @@ def analyze_sample_prediction(model, scaler, X_test, y_test, sample_idx=0):
     print(f"Percentage Error: {abs(sample_true - sample_pred) / sample_true * 100:.2f}%")
     print("-" * 50)
 
-    # SHAP explanation
     explain_prediction_with_shap_kernel(model, scaler, X_test, sample_idx)
 

@@ -53,7 +53,6 @@ const BlackScholesResults: React.FC = () => {
 
       {results && (
         <div className="results-section">
-          {/* Summary Statistics */}
           <div className="summary-stats">
             <h3>Prediction Summary</h3>
             <div className="stats-grid">
@@ -84,7 +83,6 @@ const BlackScholesResults: React.FC = () => {
             </div>
           </div>
 
-          {/* Predictions Table */}
           <div className="predictions-section">
             <h3>Sample Black-Scholes Predictions</h3>
             <div className="predictions-table">

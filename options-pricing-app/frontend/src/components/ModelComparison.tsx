@@ -53,23 +53,17 @@ const ModelComparison: React.FC = () => {
     results.forEach(result => {
       const existing = bestResults[result.model_type];
       
-      // If no existing result for this model type, use this one
       if (!existing) {
         bestResults[result.model_type] = result;
         return;
       }
       
-      // Compare performance metrics to find the best model
-      // Lower MAE and RMSE are better, Higher R² score is better
-      
-      // Count how many of the 3 key metrics are better
       let betterMetrics = 0;
       
       if (result.mean_absolute_error < existing.mean_absolute_error) betterMetrics++;
       if (result.root_mean_squared_error < existing.root_mean_squared_error) betterMetrics++;
       if (result.r2_score > existing.r2_score) betterMetrics++;
       
-      // If 2 out of 3 metrics are better, use this model
       if (betterMetrics >= 2) {
         bestResults[result.model_type] = result;
       }

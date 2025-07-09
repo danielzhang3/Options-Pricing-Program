@@ -103,31 +103,26 @@ export interface OptionPredictionResponse {
 
 export const optionsApi = {
 
-  // Get market data
   getMarketData: async (): Promise<MarketData[]> => {
     const response = await api.get('/market-data/');
     return response.data;
   },
 
-  // Get latest market data for symbol
   getLatestMarketData: async (symbol: string): Promise<MarketData> => {
     const response = await api.get(`/market-data/${symbol}/latest/`);
     return response.data;
   },
 
-  // Get Black-Scholes batch results
   getBlackScholesBatchResults: async (): Promise<BlackScholesBatchResult> => {
     const response = await api.get('/black-scholes-batch/');
     return response.data;
   },
 
-  // Train neural network model
   trainNeuralNetwork: async (params: NeuralNetworkTrainingParams = {}): Promise<NeuralNetworkTrainingResult> => {
     const response = await api.post('/train-neural-network/', params);
     return response.data;
   },
 
-  // Predict option price using all models
   predictOptionPrice: async (data: OptionCalculationRequest): Promise<OptionPredictionResponse> => {
     const response = await api.post('/predict/', data);
     return response.data;
