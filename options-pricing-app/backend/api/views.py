@@ -317,23 +317,7 @@ def train_regression_model(request):
         
         summary_stats = results.get('summary_stats', {})
         training_result = ModelTrainingResult.objects.create(
-            model_type='linear_regression',
-            alpha=alpha,
-            lambda_val=lambda_,
-            num_iters=num_iters,
-            mean_absolute_error=summary_stats.get('mean_absolute_error', 0),
-            mean_squared_error=results.get('mse', 0),
-            root_mean_squared_error=float(np.sqrt(results.get('mse', 0))),
-            r2_score=results.get('r2_score', 0),
-            mean_absolute_percentage_error=summary_stats.get('mean_absolute_percentage_error', 0),
-            residual_std=summary_stats.get('std_residuals', 0),
-            max_overprediction=summary_stats.get('max_overprediction', 0),
-            max_underprediction=summary_stats.get('max_underprediction', 0),
-            n_training_samples=len(X),
-            n_test_samples=len(X) * 0.2,  
-            coefficients=results.get('coefficients'),
-            feature_names=feature_names,
-            training_inputs=training_inputs
+            
         )
         
         results['training_result_id'] = training_result.id
@@ -438,7 +422,7 @@ def black_scholes_batch(request):
         if fallback:
             all_tickers.add(fallback)
     from .multiple_linear_regression import bulk_fetch_price_history, get_price_from_cache, get_vol_from_cache
-    price_history = bulk_fetch_price_history(all_tickers, period_days=180)
+    price_history = bulk_fetch_price_history(all_tickers, period_days=365)
 
     def lookup_price(row):
         base_symbol = row['underlying'].upper().replace('$', '')
@@ -596,7 +580,7 @@ def predict_option_price(request):
             if ml_price is not None:
                 regression_results = ModelTrainingResult.objects.filter(
                     model_type='linear_regression'
-                ).order_by('-r2_score', '-training_date').first()
+                ).order_by('mean_absolute_error', 'root_mean_squared_error', '-training_date').first()
                 
                 results['ml_regression'] = {
                     'price': ml_price,
@@ -645,7 +629,7 @@ def predict_option_price(request):
             if nn_price is not None:
                 nn_results = ModelTrainingResult.objects.filter(
                     model_type='neural_network'
-                ).order_by('-r2_score', '-training_date').first()
+                ).order_by('mean_absolute_error', 'root_mean_squared_error', '-training_date').first()
                 
                 results['neural_network'] = {
                     'price': nn_price,

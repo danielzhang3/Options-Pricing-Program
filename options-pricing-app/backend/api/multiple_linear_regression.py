@@ -12,7 +12,7 @@ def load_option_data():
     queryset = TestingOptionData.objects.all().values()
     return pd.DataFrame(list(queryset))
 
-def bulk_fetch_price_history(tickers, period_days=90):
+def bulk_fetch_price_history(tickers, period_days=365):
     price_history = {}
     for ticker in tickers:
         try:
@@ -73,7 +73,7 @@ def preprocess(df):
         if fallback:
             all_tickers.add(fallback)
     print(f"Bulk fetching price history for: {all_tickers}")
-    price_history = bulk_fetch_price_history(all_tickers, period_days=180)
+    price_history = bulk_fetch_price_history(all_tickers, period_days=365)
     
     def lookup_price(row):
         base_symbol = row['underlying'].upper().replace('$', '')

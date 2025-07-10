@@ -87,7 +87,7 @@ def fetch_market_data(df):
             all_tickers.add(fallback)
     
     print(f"Fetching price history for {len(all_tickers)} tickers...")
-    price_history = bulk_fetch_price_history(all_tickers, period_days=180)
+    price_history = bulk_fetch_price_history(all_tickers, period_days=365)
     
     def lookup_price(row):
         base_symbol = row['underlying'].upper().replace('$', '')

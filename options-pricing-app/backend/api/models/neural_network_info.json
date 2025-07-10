@@ -3,7 +3,7 @@
   "batch_size": 32,
   "validation_split": 0.2,
   "n_features": 12,
-  "training_date": "2025-07-09T03:28:13.519582+00:00",
+  "training_date": "2025-07-09T18:24:09.389762+00:00",
   "feature_names": [
     "strike_price",
     "underlying_price",
@@ -18,6 +18,6 @@
     "log_moneyness",
     "volatility_time"
   ],
-  "saved_at": "2025-07-09T03:28:13.549205",
+  "saved_at": "2025-07-09T18:24:09.439415",
   "model_type": "neural_network"
 }

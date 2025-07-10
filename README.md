@@ -241,7 +241,7 @@ options-pricing-app/
 |--------------------------|---------------------|-------------------------|----------|
 | Black-Scholes            | $103.80             | $207.70                 | —        |
 | Multiple Linear Regression | $56.62              | $105.17                 | 0.413    |
-| Neural Network (TF/Keras) | **$19.48**          | **$36.13**              | **0.93** |
+| Neural Network (TF/Keras) | **$15.53**          | **$28.68**              | **0.93** |
 
 ### 💡 Key Takeaway
 
@@ -249,7 +249,7 @@ Despite its theoretical elegance, the Black-Scholes model underperforms on real-
 
 This confirms that modern machine learning methods can complement or outperform classical finance models when properly engineered and trained on realistic data.
 
-**Note: The neural network results come from two related model configurations. The robust pricing model, optimized for practical accuracy, achieved an MAE of $19.48 and a residual standard deviation of $36.13. Meanwhile, the variance-explaining model, trained on the full dataset without outlier filtering, achieved an R² score of 0.93.**
+**Note: The neural network results come from two related model configurations. The robust pricing model, optimized for practical accuracy, achieved an MAE of $15.53 and a residual standard deviation of $28.68. Meanwhile, the variance-explaining model, trained on the full dataset without outlier filtering, achieved an R² score of 0.93.**
 
 ### 🔍 Model Interpretability with SHAP
 

@@ -83,7 +83,9 @@ def get_30d_historical_volatility(symbol: str, end_date) -> float:
             continue
         try:
             ticker = yf.Ticker(symbol_try)
-            hist = ticker.history(end=end_date_str, period="60d")
+            # Use start and end dates instead of period for historical data
+            start_date = (end_date - timedelta(days=90)).strftime('%Y-%m-%d') if isinstance(end_date, datetime) else None
+            hist = ticker.history(start=start_date, end=end_date_str)
             if hist.shape[0] < 30:
                 continue
             hist['returns'] = hist['Close'].pct_change()
