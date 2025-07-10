@@ -241,7 +241,7 @@ options-pricing-app/
 |--------------------------|---------------------|-------------------------|----------|
 | Black-Scholes            | $103.80             | $207.70                 | —        |
 | Multiple Linear Regression | $56.62              | $105.17                 | 0.413    |
-| Neural Network (TF/Keras) | **$15.53**          | **$28.68**              | **0.93** |
+| Neural Network (TF/Keras) | **$14.73**          | **$28.68**              | **0.93** |
 
 ### 💡 Key Takeaway
 
